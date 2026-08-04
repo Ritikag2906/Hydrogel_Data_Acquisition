@@ -129,11 +129,15 @@ Each recording is automatically stored in the appropriate folder together with i
 
 ---
 
-## Related Project
+## Companion Repository
 
-The recorded tactile signals are processed and used for self-supervised representation learning in the companion repository:
+This repository focuses on tactile data acquisition from conductive hydrogel sensors.
+
+The recorded signals are processed using the companion self-supervised learning framework:
 
 **Hydrogel-SSL-Tactile-Sensing**
+
+https://github.com/Ritikag2906/Hydrogel-SSL-Tactile-Sensing
 
 ---
 
