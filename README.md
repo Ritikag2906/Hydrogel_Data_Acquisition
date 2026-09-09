@@ -2,9 +2,12 @@
 
 > Data acquisition and analysis framework for conductive hydrogel tactile sensors.
 
-**Author:** Ritika Gupta  
-**Master's Thesis**  
-**Max Planck Institute for Intelligent Systems (MPI-IS), Stuttgart**  
+**Author:** Ritika Gupta
+
+**Master's Thesis**
+
+**Max Planck Institute for Intelligent Systems (MPI-IS), Stuttgart**
+
 **University of Freiburg**
 
 ---
@@ -15,7 +18,7 @@ This repository contains the data acquisition and analysis framework developed a
 
 The project focuses on conductive hydrogel-based tactile sensors and the acquisition of multimodal sensor data. Electrical measurements are acquired using an Arduino-based system, while mechanical measurements are obtained using an Instron testing machine.
 
-The recorded data is organized according to sensor properties and surface conditions. The data is then processed to extract electrical and mechanical features, which will form the basis for subsequent multimodal analysis and machine learning.
+The recorded data is organized according to the experimental conditions and processed to extract electrical and mechanical features. These features provide the basis for subsequent multimodal analysis.
 
 ---
 
@@ -37,7 +40,7 @@ The recorded data is organized according to sensor properties and surface condit
              Python Serial Acquisition
                        │
                        ▼
-                Electrical Data
+                 Electrical Data
              (Voltage / Resistance)
                        │
                        │
@@ -55,17 +58,14 @@ The recorded data is organized according to sensor properties and surface condit
               Data Preprocessing
                        │
                        ▼
-              Feature Extraction
+             Feature Extraction
                        │
                        ▼
           Multimodal Data Analysis
-                       │
-                       ▼
-              Machine Learning
 
 Repository Structure
-
 Hydrogel_Data_Acquisition/
+
 │
 ├── Arduino/
 │   └── ADCV1.ino
@@ -97,12 +97,8 @@ Hydrogel_Data_Acquisition/
 ├── Analysis/
 │   ├── Arduino_Analysis.py
 │   ├── Instron_Smooth_vs_Rough_Analysis.py
-│   │
 │   ├── Arduino_Results/
-│   │   └── Arduino_Electrical_Features.csv
-│   │
 │   └── Mechanical_Results/
-│       └── Smooth_vs_Rough_Mechanical_Features.csv
 │
 ├── Figures/
 │   ├── Arduino/
@@ -115,9 +111,6 @@ Hydrogel_Data_Acquisition/
 ├── LICENSE
 ├── requirements.txt
 └── .gitignore
-
-The synchronization script and combined multimodal analysis will be added as the corresponding analysis stages are developed and validated.
-
 Data Acquisition
 
 The electrical acquisition system records the response of conductive hydrogel tactile sensors during mechanical loading.
@@ -130,7 +123,7 @@ Resistance
 
 The measurements are transferred through serial communication to Python, where they are automatically recorded as CSV files.
 
-The acquisition framework supports repeated trials and organized storage according to the experimental condition.
+The acquisition system supports repeated trials and organized storage according to the experimental condition.
 
 Experimental Dataset
 
@@ -145,40 +138,36 @@ H20
 H30
 H50
 
-Two Arduino trials were recorded for the smooth-surface conditions. The first trial is currently used as the main trial for the balanced analysis, while the additional trial is retained for repeatability analysis.
+Two Arduino trials were recorded for the smooth-surface conditions. The first trial is currently used as the main trial for the balanced analysis, while additional trials are retained for repeatability analysis.
 
 Rough Surfaces
 
-The rough-surface experiments combine the four hardness levels with two roughness/density conditions:
+The rough-surface experiments combine the four hardness levels with two surface conditions:
 
 R30
 R40
 
-The main experimental conditions are:
-Smooth:
-    H10
-    H20
-    H30
-    H50
+The main rough-surface conditions are:
 
-Rough:
-    H10_R30
-    H10_R40
-    H20_R30
-    H20_R40
-    H30_R30
-    H30_R40
-    H50_R30
-    H50_R40
+H10_R30
+H10_R40
+H20_R30
+H20_R40
+H30_R30
+H30_R40
+H50_R30
+H50_R40
 
-This gives a total of 12 main experimental conditions.
+Together with the four smooth-surface conditions, this gives a total of 12 main experimental conditions.
 
-Additional experiments, including Gel and No_Testbed measurements, are retained as reference/control experiments.
+Additional experiments, including Gel and No_Testbed measurements, are retained as reference and control data.
 
 Electrical Data Analysis
 
-The electrical analysis is performed using:
+Electrical data analysis is performed using:
+
 Analysis/Arduino_Analysis.py
+
 The analysis extracts features from the recorded resistance and voltage signals, including:
 
 Recording duration
@@ -198,16 +187,20 @@ Relative change in voltage
 Voltage statistics
 
 The extracted electrical features are saved in:
-Analysis/Arduino_Results/
-Figures generated during the electrical analysis are stored in:
-Figures/Arduino/
 
+Analysis/Arduino_Results/
+
+Figures generated during the electrical analysis are stored in:
+
+Figures/Arduino/
 Mechanical Data Analysis
 
 Mechanical measurements are obtained from Instron compression tests.
 
 The current mechanical analysis is performed using:
+
 Analysis/Instron_Smooth_vs_Rough_Analysis.py
+
 The analysis extracts representative mechanical features including:
 
 Maximum force
@@ -228,7 +221,7 @@ The corresponding figures are stored in:
 Figures/Mechanical_Smooth_vs_Rough/
 Electrical and Mechanical Synchronization
 
-Synchronization of the electrical Arduino measurements with the mechanical Instron measurements is planned as the next stage of the analysis.
+A further stage of the analysis is to synchronize the electrical measurements from the Arduino with the mechanical measurements from the Instron.
 
 The planned synchronized dataset will combine:
 
@@ -240,14 +233,11 @@ Force
 Strain
 Stress
 
-The synchronization will be based on the timing of the compression experiment rather than forcing specific electrical and mechanical peaks to coincide.
+The synchronization will align the electrical and mechanical measurements based on the timing of the compression experiment.
 
-The synchronization approach will first be validated using individual pilot trials before being applied to the complete dataset.
+This stage is being developed and validated using individual pilot trials before being applied to the complete dataset.
 
 Features
-
-The current framework provides:
-
 Arduino-based electrical data acquisition
 ADS1115-based voltage measurement
 Automatic resistance calculation
@@ -257,11 +247,9 @@ Organized experimental trial management
 Instron mechanical data processing
 Electrical feature extraction
 Mechanical feature extraction
+Electrical-mechanical data synchronization
 Automated figure generation
-Preparation of multimodal datasets for machine learning
-
-Future analysis stages will include electrical-mechanical synchronization and machine learning.
-
+Preparation of multimodal datasets for further analysis
 Hardware
 
 The electrical acquisition system consists of:
@@ -293,45 +281,26 @@ Reproducibility
 
 The repository separates raw experimental data, analysis scripts, numerical results, and generated figures.
 
-The current analysis workflow is:
+The general analysis workflow is:
 
-Raw Dataset
-     │
-     ▼
-Analysis Scripts
-     │
-     ├── Electrical Analysis
-     │        │
-     │        ▼
-     │   Electrical Features
-     │
-     └── Mechanical Analysis
-              │
-              ▼
-       Mechanical Features
-              │
-              ▼
-      Future Synchronization
-              │
-              ▼
-       Multimodal Dataset
-              │
-              ▼
-       Machine Learning
+Raw Experimental Data
+          │
+          ▼
+    Analysis Scripts
+          │
+          ├── Electrical Analysis
+          │
+          ├── Mechanical Analysis
+          │
+          └── Synchronization
+                    │
+                    ▼
+            Multimodal Dataset
+                    │
+                    ▼
+             Further Analysis
 
 Raw experimental data should be treated as source data and should not be modified by the analysis scripts.
-
-Companion Repository
-
-This repository focuses on tactile sensor data acquisition and analysis for conductive hydrogel sensors.
-
-Further machine learning and self-supervised learning methods will be developed as part of the broader thesis workflow.
-
-Companion repository:
-
-Hydrogel-SSL-Tactile-Sensing
-
-Hydrogel-SSL-Tactile-Sensing on GitHub
 
 License
 
@@ -342,5 +311,7 @@ Contact
 Ritika Gupta
 
 M.Sc. Computer Science
+
 University of Freiburg
+
 Max Planck Institute for Intelligent Systems
