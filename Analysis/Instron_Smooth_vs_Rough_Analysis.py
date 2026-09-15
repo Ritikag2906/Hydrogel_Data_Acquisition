@@ -200,9 +200,11 @@ for surface, hardness, roughness in conditions:
     time = data["Time"].to_numpy()
     displacement = data["Displacement"].to_numpy()
     force = data["Force"].to_numpy()
+
     strain = data[
         "Compressive strain (Displacement)"
     ].to_numpy()
+
     stress = data[
         "Compressive stress"
     ].to_numpy()
@@ -326,6 +328,7 @@ print(
 # ======================================================
 # PLOT 1
 # FORCE VS DISPLACEMENT
+# One graph for each hardness
 # ======================================================
 
 for hardness in [10, 20, 30, 50]:
@@ -346,8 +349,9 @@ for hardness in [10, 20, 30, 50]:
 
     plt.xlabel("Displacement")
     plt.ylabel("Force (N)")
+
     plt.title(
-        f"Force vs Displacement - H{hardness}"
+        f"Plot 1 - Force vs Displacement: Smooth vs Rough - H{hardness}"
     )
 
     plt.legend()
@@ -366,77 +370,118 @@ for hardness in [10, 20, 30, 50]:
 
 
 # ======================================================
+# OLD HARDNESS-BASED PLOTS
+# ======================================================
+#
+# These plots are kept for reference but are commented
+# out for now. The current comparison uses surface
+# condition on the x-axis.
+#
+# Original plots:
+# - Maximum Force vs Hardness
+# - Effective Loading Stiffness vs Hardness
+# - Maximum Displacement vs Hardness
+# - Maximum Stress vs Hardness
+#
+# ======================================================
+
+
+# ======================================================
+# NEW SURFACE / ROUGHNESS-BASED PLOTS
+# ======================================================
+#
+# The x-axis represents the surface condition:
+# Smooth, R30 and R40.
+#
+# Each line represents one hardness level.
+# This allows the effect of surface condition to be
+# compared while keeping hardness constant.
+#
+# H20 is included again because the H20 measurements
+# have now been retaken.
+# ======================================================
+
+surface_conditions = ["Smooth", "R30", "R40"]
+hardness_levels = [10, 20, 30, 50]
+
+
+def get_surface_values(feature_column, hardness):
+    """Get Smooth, R30 and R40 values for one hardness."""
+
+    values = []
+
+    for surface_condition in surface_conditions:
+
+        if surface_condition == "Smooth":
+
+            row = summary[
+                (summary["Surface"] == "Smooth") &
+                (summary["Hardness"] == hardness)
+            ]
+
+        else:
+
+            roughness = int(surface_condition[1:])
+
+            row = summary[
+                (summary["Surface"] == "Rough") &
+                (summary["Hardness"] == hardness) &
+                (
+                    summary["Roughness Density (%)"]
+                    == roughness
+                )
+            ]
+
+        if len(row) > 0:
+
+            values.append(
+                row[feature_column].iloc[0]
+            )
+
+        else:
+
+            values.append(np.nan)
+
+    return values
+
+
+# ======================================================
 # PLOT 2
-# MAXIMUM FORCE VS HARDNESS
+# MAXIMUM FORCE VS SURFACE CONDITION
 # ======================================================
 
 plt.figure(figsize=(9, 6))
 
-for roughness in [30, 40]:
+for hardness in hardness_levels:
 
-    values = []
-
-    for hardness in [10, 20, 30, 50]:
-
-        row = summary[
-            (summary["Surface"] == "Rough") &
-            (summary["Hardness"] == hardness) &
-            (
-                summary["Roughness Density (%)"]
-                == roughness
-            )
-        ]
-
-        if len(row) > 0:
-            values.append(
-                row["Maximum Force (N)"].iloc[0]
-            )
-        else:
-            values.append(np.nan)
+    values = get_surface_values(
+        "Maximum Force (N)",
+        hardness
+    )
 
     plt.plot(
-        [10, 20, 30, 50],
+        surface_conditions,
         values,
         marker="o",
         linewidth=1.5,
-        label=f"Rough R{roughness}"
+        label=f"H{hardness}"
     )
 
-smooth_values = []
+plt.xlabel("Surface Condition")
+plt.ylabel("Maximum Force (N)")
 
-for hardness in [10, 20, 30, 50]:
-
-    row = summary[
-        (summary["Surface"] == "Smooth") &
-        (summary["Hardness"] == hardness)
-    ]
-
-    if len(row) > 0:
-        smooth_values.append(
-            row["Maximum Force (N)"].iloc[0]
-        )
-    else:
-        smooth_values.append(np.nan)
-
-plt.plot(
-    [10, 20, 30, 50],
-    smooth_values,
-    marker="o",
-    linewidth=1.5,
-    label="Smooth"
+plt.title(
+    "Plot 2 - Maximum Force vs Surface Condition"
 )
 
-plt.xlabel("Shore Hardness")
-plt.ylabel("Maximum Force (N)")
-plt.title("Maximum Force: Smooth vs Rough")
-plt.legend()
+plt.legend(title="Hardness")
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 
 plt.savefig(
     os.path.join(
         FIGURES_DIR,
-        "Maximum_Force_Smooth_vs_Rough.png"
+        "Maximum_Force_vs_Surface_Condition.png"
     ),
     dpi=300
 )
@@ -446,80 +491,41 @@ plt.close()
 
 # ======================================================
 # PLOT 3
-# EFFECTIVE LOADING STIFFNESS VS HARDNESS
+# EFFECTIVE LOADING STIFFNESS VS SURFACE CONDITION
 # ======================================================
 
 plt.figure(figsize=(9, 6))
 
-for roughness in [30, 40]:
+for hardness in hardness_levels:
 
-    values = []
-
-    for hardness in [10, 20, 30, 50]:
-
-        row = summary[
-            (summary["Surface"] == "Rough") &
-            (summary["Hardness"] == hardness) &
-            (
-                summary["Roughness Density (%)"]
-                == roughness
-            )
-        ]
-
-        if len(row) > 0:
-            values.append(
-                row[
-                    "Effective Loading Stiffness (N/unit)"
-                ].iloc[0]
-            )
-        else:
-            values.append(np.nan)
+    values = get_surface_values(
+        "Effective Loading Stiffness (N/unit)",
+        hardness
+    )
 
     plt.plot(
-        [10, 20, 30, 50],
+        surface_conditions,
         values,
         marker="o",
         linewidth=1.5,
-        label=f"Rough R{roughness}"
+        label=f"H{hardness}"
     )
 
-smooth_values = []
+plt.xlabel("Surface Condition")
+plt.ylabel("Effective Loading Stiffness (N/unit)")
 
-for hardness in [10, 20, 30, 50]:
-
-    row = summary[
-        (summary["Surface"] == "Smooth") &
-        (summary["Hardness"] == hardness)
-    ]
-
-    if len(row) > 0:
-        smooth_values.append(
-            row[
-                "Effective Loading Stiffness (N/unit)"
-            ].iloc[0]
-        )
-    else:
-        smooth_values.append(np.nan)
-
-plt.plot(
-    [10, 20, 30, 50],
-    smooth_values,
-    marker="o",
-    linewidth=1.5,
-    label="Smooth"
+plt.title(
+    "Plot 3 - Effective Loading Stiffness vs Surface Condition"
 )
 
-plt.xlabel("Shore Hardness")
-plt.ylabel("Effective Loading Stiffness (N/unit)")
-plt.title("Effective Loading Stiffness: Smooth vs Rough")
-plt.legend()
+plt.legend(title="Hardness")
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 
 plt.savefig(
     os.path.join(
         FIGURES_DIR,
-        "Loading_Stiffness_Smooth_vs_Rough.png"
+        "Loading_Stiffness_vs_Surface_Condition.png"
     ),
     dpi=300
 )
@@ -529,76 +535,41 @@ plt.close()
 
 # ======================================================
 # PLOT 4
-# MAXIMUM DISPLACEMENT VS HARDNESS
+# MAXIMUM DISPLACEMENT VS SURFACE CONDITION
 # ======================================================
 
 plt.figure(figsize=(9, 6))
 
-for roughness in [30, 40]:
+for hardness in hardness_levels:
 
-    values = []
-
-    for hardness in [10, 20, 30, 50]:
-
-        row = summary[
-            (summary["Surface"] == "Rough") &
-            (summary["Hardness"] == hardness) &
-            (
-                summary["Roughness Density (%)"]
-                == roughness
-            )
-        ]
-
-        if len(row) > 0:
-            values.append(
-                row["Maximum Displacement"].iloc[0]
-            )
-        else:
-            values.append(np.nan)
+    values = get_surface_values(
+        "Maximum Displacement",
+        hardness
+    )
 
     plt.plot(
-        [10, 20, 30, 50],
+        surface_conditions,
         values,
         marker="o",
         linewidth=1.5,
-        label=f"Rough R{roughness}"
+        label=f"H{hardness}"
     )
 
-smooth_values = []
+plt.xlabel("Surface Condition")
+plt.ylabel("Maximum Displacement")
 
-for hardness in [10, 20, 30, 50]:
-
-    row = summary[
-        (summary["Surface"] == "Smooth") &
-        (summary["Hardness"] == hardness)
-    ]
-
-    if len(row) > 0:
-        smooth_values.append(
-            row["Maximum Displacement"].iloc[0]
-        )
-    else:
-        smooth_values.append(np.nan)
-
-plt.plot(
-    [10, 20, 30, 50],
-    smooth_values,
-    marker="o",
-    linewidth=1.5,
-    label="Smooth"
+plt.title(
+    "Plot 4 - Maximum Displacement vs Surface Condition"
 )
 
-plt.xlabel("Shore Hardness")
-plt.ylabel("Maximum Displacement")
-plt.title("Maximum Displacement: Smooth vs Rough")
-plt.legend()
+plt.legend(title="Hardness")
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 
 plt.savefig(
     os.path.join(
         FIGURES_DIR,
-        "Maximum_Displacement_Smooth_vs_Rough.png"
+        "Maximum_Displacement_vs_Surface_Condition.png"
     ),
     dpi=300
 )
@@ -608,76 +579,41 @@ plt.close()
 
 # ======================================================
 # PLOT 5
-# MAXIMUM STRESS VS HARDNESS
+# MAXIMUM STRESS VS SURFACE CONDITION
 # ======================================================
 
 plt.figure(figsize=(9, 6))
 
-for roughness in [30, 40]:
+for hardness in hardness_levels:
 
-    values = []
-
-    for hardness in [10, 20, 30, 50]:
-
-        row = summary[
-            (summary["Surface"] == "Rough") &
-            (summary["Hardness"] == hardness) &
-            (
-                summary["Roughness Density (%)"]
-                == roughness
-            )
-        ]
-
-        if len(row) > 0:
-            values.append(
-                row["Maximum Stress (MPa)"].iloc[0]
-            )
-        else:
-            values.append(np.nan)
+    values = get_surface_values(
+        "Maximum Stress (MPa)",
+        hardness
+    )
 
     plt.plot(
-        [10, 20, 30, 50],
+        surface_conditions,
         values,
         marker="o",
         linewidth=1.5,
-        label=f"Rough R{roughness}"
+        label=f"H{hardness}"
     )
 
-smooth_values = []
+plt.xlabel("Surface Condition")
+plt.ylabel("Maximum Stress (MPa)")
 
-for hardness in [10, 20, 30, 50]:
-
-    row = summary[
-        (summary["Surface"] == "Smooth") &
-        (summary["Hardness"] == hardness)
-    ]
-
-    if len(row) > 0:
-        smooth_values.append(
-            row["Maximum Stress (MPa)"].iloc[0]
-        )
-    else:
-        smooth_values.append(np.nan)
-
-plt.plot(
-    [10, 20, 30, 50],
-    smooth_values,
-    marker="o",
-    linewidth=1.5,
-    label="Smooth"
+plt.title(
+    "Plot 5 - Maximum Stress vs Surface Condition"
 )
 
-plt.xlabel("Shore Hardness")
-plt.ylabel("Maximum Stress (MPa)")
-plt.title("Maximum Stress: Smooth vs Rough")
-plt.legend()
+plt.legend(title="Hardness")
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 
 plt.savefig(
     os.path.join(
         FIGURES_DIR,
-        "Maximum_Stress_Smooth_vs_Rough.png"
+        "Maximum_Stress_vs_Surface_Condition.png"
     ),
     dpi=300
 )
@@ -713,4 +649,3 @@ print("\nFigures saved to:")
 print(FIGURES_DIR)
 
 print("\nAnalysis completed.")
-
