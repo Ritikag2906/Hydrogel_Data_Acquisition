@@ -84,60 +84,6 @@ Project Workflow
                                                   ▼
                                       Machine-Learning Analysis
 
-Repository Structure
-
-Hydrogel_Data_Acquisition/
-
-│
-├── Arduino/
-│   └── ADCV1.ino
-│
-├── Dataset/
-│   ├── Arduino_Instron_Data/
-│   │   ├── Gel/
-│   │   ├── No_Testbed/
-│   │   ├── SmoothSurface/
-│   │   │   ├── Hardness_10/
-│   │   │   ├── Hardness_20/
-│   │   │   ├── Hardness_30/
-│   │   │   └── Hardness_50/
-│   │   └── RoughSurface/
-│   │       ├── Rough_H10_R30/
-│   │       ├── Rough_H10_R40/
-│   │       ├── Rough_H20_R30/
-│   │       ├── Rough_H20_R40/
-│   │       ├── Rough_H30_R30/
-│   │       ├── Rough_H30_R40/
-│   │       ├── Rough_H50_R30/
-│   │       └── Rough_H50_R40/
-│   │
-│   └── Instron_Data/
-│       ├── SmoothSurface/
-│       ├── RoughSurface/
-│       └── ...
-│
-├── Analysis/
-│   ├── Arduino_Analysis.py
-│   ├── Instron_Smooth_vs_Rough_Analysis.py
-│   ├── Arduino_Instron_Synchronization.py
-│   ├── Multimodal_Feature_Analysis.py
-│   ├── Arduino_Results/
-│   ├── Mechanical_Results/
-│   ├── Synchronized_Data/
-│   └── Multimodal_Results/
-│
-├── Figures/
-│   ├── Arduino/
-│   ├── Mechanical_Smooth_vs_Rough/
-│   ├── Synchronization/
-│   └── Multimodal/
-│
-├── src/
-│
-├── README.md
-├── LICENSE
-├── requirements.txt
-└── .gitignore
 
 Data Acquisition
 
