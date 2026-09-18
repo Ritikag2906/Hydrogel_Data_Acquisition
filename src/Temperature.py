@@ -2,6 +2,7 @@ import serial
 import csv
 import time
 import os
+import re
 from datetime import datetime
 
 # --------------------------------------------------
@@ -10,7 +11,7 @@ from datetime import datetime
 
 arduino = serial.Serial('COM24', 9600, timeout=2)
 
-# Give Arduino a moment to reset
+# Give Arduino time to reset
 time.sleep(2)
 
 print("Connected to Arduino!")
@@ -20,13 +21,13 @@ print("Connected to Arduino!")
 # 2. Data storage folder
 # --------------------------------------------------
 
-folder = r'C:\Users\rgupta\Desktop\Master thesis\Hydrogel_Data_Acquisition\Dataset'
+folder = r'C:\Users\rgupta\Desktop\Master thesis\Hydrogel_Data_Acquisition\Dataset\temperature'
 
 os.makedirs(folder, exist_ok=True)
 
 
 # --------------------------------------------------
-# 3. Create a unique filename
+# 3. Create unique filename
 # --------------------------------------------------
 
 start_time = datetime.now()
@@ -47,7 +48,6 @@ with open(filename, 'w', newline='') as file:
 
     writer = csv.writer(file)
 
-    # CSV header
     writer.writerow([
         'Date_Time',
         'Elapsed_Time_s',
@@ -58,6 +58,8 @@ with open(filename, 'w', newline='') as file:
         'Heat_Index_F'
     ])
 
+    file.flush()
+
     print("Recording data...")
     print("Press Ctrl+C in the console to stop.\n")
 
@@ -65,121 +67,139 @@ with open(filename, 'w', newline='') as file:
 
         while True:
 
-            # Read line from Arduino
+            # Read one line from Arduino
             line = arduino.readline().decode(
                 'utf-8',
                 errors='ignore'
             ).strip()
 
-            if line:
-                print(line)
+            if not line:
+                continue
 
-            # Check for a valid DHT reading
-            if 'Humidity:' in line and 'Temperature:' in line:
+            print(line)
 
-                try:
+            # --------------------------------------------------
+            # Extract humidity
+            # --------------------------------------------------
 
-                    # ------------------------------------------
-                    # Extract humidity
-                    # ------------------------------------------
+            humidity_match = re.search(
+                r'Humidity:\s*([0-9.]+)%',
+                line
+            )
 
-                    humidity = float(
-                        line.split('Humidity:')[1]
-                        .split('%')[0]
-                        .strip()
-                    )
+            # --------------------------------------------------
+            # Extract Celsius temperature
+            # --------------------------------------------------
 
-                    # ------------------------------------------
-                    # Extract Celsius temperature
-                    # ------------------------------------------
+            temperature_c_match = re.search(
+                r'Temperature:\s*([0-9.]+)',
+                line
+            )
 
-                    temperature_c = float(
-                        line.split('Temperature:')[1]
-                        .split('°C')[0]
-                        .strip()
-                    )
+            # --------------------------------------------------
+            # Extract Fahrenheit temperature
+            # --------------------------------------------------
 
-                    # ------------------------------------------
-                    # Extract Fahrenheit temperature
-                    # ------------------------------------------
+            temperature_f_match = re.search(
+                r'Temperature:\s*[0-9.]+°C\s*([0-9.]+)°F',
+                line
+            )
 
-                    temperature_f = float(
-                        line.split('°C')[1]
-                        .split('°F')[0]
-                        .strip()
-                    )
+            # --------------------------------------------------
+            # Extract heat index Celsius
+            # --------------------------------------------------
 
-                    # ------------------------------------------
-                    # Extract heat index in Celsius
-                    # ------------------------------------------
+            heat_index_c_match = re.search(
+                r'Heat index:\s*([0-9.]+)',
+                line
+            )
 
-                    heat_index_c = float(
-                        line.split('Heat index:')[1]
-                        .split('°C')[0]
-                        .strip()
-                    )
+            # --------------------------------------------------
+            # Extract heat index Fahrenheit
+            # --------------------------------------------------
 
-                    # ------------------------------------------
-                    # Extract heat index in Fahrenheit
-                    # ------------------------------------------
+            heat_index_f_match = re.search(
+                r'Heat index:\s*[0-9.]+°C\s*([0-9.]+)°F',
+                line
+            )
 
-                    heat_index_f = float(
-                        line.split('°C')[3]
-                        .split('°F')[0]
-                        .strip()
-                    )
+            # --------------------------------------------------
+            # Save only if all values were found
+            # --------------------------------------------------
 
-                    # ------------------------------------------
-                    # Time
-                    # ------------------------------------------
+            if (
+                humidity_match
+                and temperature_c_match
+                and temperature_f_match
+                and heat_index_c_match
+                and heat_index_f_match
+            ):
 
-                    now = datetime.now()
+                humidity = float(
+                    humidity_match.group(1)
+                )
 
-                    timestamp = now.strftime(
-                        '%Y-%m-%d %H:%M:%S'
-                    )
+                temperature_c = float(
+                    temperature_c_match.group(1)
+                )
 
-                    elapsed_time = (
-                        now - start_time
-                    ).total_seconds()
+                temperature_f = float(
+                    temperature_f_match.group(1)
+                )
 
-                    # ------------------------------------------
-                    # Save to CSV
-                    # ------------------------------------------
+                heat_index_c = float(
+                    heat_index_c_match.group(1)
+                )
 
-                    writer.writerow([
-                        timestamp,
-                        round(elapsed_time, 2),
-                        temperature_c,
-                        temperature_f,
-                        humidity,
-                        heat_index_c,
-                        heat_index_f
-                    ])
+                heat_index_f = float(
+                    heat_index_f_match.group(1)
+                )
 
-                    # Make sure data is written immediately
-                    file.flush()
+                # --------------------------------------------------
+                # Time
+                # --------------------------------------------------
 
-                    print(
-                        f"Saved | "
-                        f"{elapsed_time:.1f} s | "
-                        f"T = {temperature_c:.2f} °C | "
-                        f"H = {humidity:.2f} % | "
-                        f"HI = {heat_index_c:.2f} °C"
-                    )
+                now = datetime.now()
 
-                except (ValueError, IndexError):
+                timestamp = now.strftime(
+                    '%Y-%m-%d %H:%M:%S'
+                )
 
-                    # Ignore lines that cannot be parsed
-                    pass
+                elapsed_time = (
+                    now - start_time
+                ).total_seconds()
+
+                # --------------------------------------------------
+                # Write data
+                # --------------------------------------------------
+
+                writer.writerow([
+                    timestamp,
+                    round(elapsed_time, 2),
+                    temperature_c,
+                    temperature_f,
+                    humidity,
+                    heat_index_c,
+                    heat_index_f
+                ])
+
+                # Save immediately
+                file.flush()
+
+                print(
+                    f"✓ SAVED | "
+                    f"T = {temperature_c:.2f} °C | "
+                    f"H = {humidity:.2f} % | "
+                    f"HI = {heat_index_c:.2f} °C"
+                )
 
     except KeyboardInterrupt:
 
         print("\nRecording stopped.")
-        print(f"Data saved to:")
-        print(filename)
 
     finally:
 
         arduino.close()
+
         print("Arduino connection closed.")
+        print(f"\nData saved to:\n{filename}")
